@@ -1,5 +1,9 @@
 from Block import Block
 
+"""
+Blockchain implementation using the Block class from Block.py as our 
+links in the chain.
+"""
 class BlockChain(object):
     def __init__(self):
         self.chain = []
@@ -7,6 +11,10 @@ class BlockChain(object):
         self.nodes = set()
         self.build_genesis()
         pass
+
+    def print(self):
+        for block in self.chain:
+            block.print()
 
     def build_genesis(self):
         self.build_block(proof_num=0, prev_hash=0)
@@ -21,7 +29,6 @@ class BlockChain(object):
         )
         self.curr_data = []
         self.chain.append(block)
-        print(self.chain)
         return block
 
     @staticmethod
@@ -45,7 +52,8 @@ class BlockChain(object):
 
     @staticmethod
     def proof_of_work(prev_proof):
-        pass
+        # TODO: actual proof
+        return prev_proof + 1 
 
     @property
     def latest_block(self):
@@ -80,20 +88,17 @@ class BlockChain(object):
 
 def main():
     blockchain = BlockChain()
-    print("GET READY MINING ABOUT TO START")
-    print(blockchain.chain)
     last_block = blockchain.latest_block
     last_proof_num = last_block.proof_num
     proof_num = blockchain.proof_of_work(last_proof_num)
     blockchain.get_data(
         sender="0", #this means that this node has constructed another block
-        receiver="LiveEdu.tv", 
+        receiver="ztk@galaxy", 
         amount=1, #building a new block (or figuring out the proof number) is awarded with 1
     )
     last_hash = last_block.compute_hash
     block = blockchain.build_block(proof_num, last_hash)
-    print("WOW, MINING HAS BEEN SUCCESSFUL!")
-    print(blockchain.chain)
+    blockchain.print()
 
 if __name__ == "__main__":
     main()
