@@ -16,11 +16,13 @@ class Block(object):
         self.prev_hash = prev_hash
         self.data = data
         self.timestamp = timestamp
+        self.hash = self.compute_hash
 
     def print(self):
-        block_str = "----------\nBlock ID: {}\nProof #{}\nPrev Hash: {}\nData: {}\nTimestamp: {}\n----------".format(
+        block_str = "----------\nBlock ID: {}\nProof #{}\nHash: {}\nPrev Hash: {}\nData: {}\nTimestamp: {}\n----------".format(
             self.idx,
             self.proof_num,
+            self.hash,
             self.prev_hash,
             self.data,
             self.timestamp

@@ -98,6 +98,7 @@ def main():
     )
     last_hash = last_block.compute_hash
     block = blockchain.build_block(proof_num, last_hash)
+    block = blockchain.build_block(proof_num + 1, block.compute_hash)
     blockchain.print()
 
 if __name__ == "__main__":
