@@ -1,5 +1,5 @@
 from Block import Block
-
+from util import transaction
 """
 Blockchain implementation using the Block class from Block.py as our 
 links in the chain.
@@ -20,14 +20,16 @@ class BlockChain(object):
         self.build_block(proof_num=0, prev_hash=0)
         pass
 
-    def build_block(self, proof_num, prev_hash):
+    def build_block(self, proof_num, prev_hash, data=None):
+        if not data:
+            data = self.curr_data
         block = Block(
             idx = len(self.chain),
             proof_num = proof_num,
             prev_hash = prev_hash,
-            data = self.curr_data
+            data = data
         )
-        self.curr_data = []
+        self.curr_data = data
         self.chain.append(block)
         return block
 
@@ -91,14 +93,13 @@ def main():
     last_block = blockchain.latest_block
     last_proof_num = last_block.proof_num
     proof_num = blockchain.proof_of_work(last_proof_num)
-    blockchain.get_data(
-        sender="0", #this means that this node has constructed another block
-        receiver="ztk@galaxy", 
-        amount=1, #building a new block (or figuring out the proof number) is awarded with 1
-    )
+    data = transaction("galaxy", "galaxy2", 50).json()
     last_hash = last_block.compute_hash
-    block = blockchain.build_block(proof_num, last_hash)
-    block = blockchain.build_block(proof_num + 1, block.compute_hash)
+    block = blockchain.build_block(proof_num, last_hash, data)
+    block = blockchain.build_block(proof_num + 1, 
+        block.compute_hash, 
+        transaction("galaxy2", "galaxy", 10).json()
+        )
     blockchain.print()
 
 if __name__ == "__main__":
