@@ -1,5 +1,8 @@
 from Block import Block
+import util
 from util import transaction
+
+DIFFICULTY = 3
 """
 Blockchain implementation using the Block class from Block.py as our 
 links in the chain.
@@ -29,6 +32,7 @@ class BlockChain(object):
             prev_hash = prev_hash,
             data = data
         )
+        self.proof_of_work(proof_num, block, DIFFICULTY)
         self.curr_data = data
         self.chain.append(block)
         return block
@@ -45,17 +49,20 @@ class BlockChain(object):
             return True
 
     def get_data(self, sender, receiver, amount):
-        self.curr_data.append({
-            'sender': sender,
-            'receiver': receiver,
-            'amount': amount
-        })
+        self.curr_data = transaction(sender, receiver, amount).json()
         return True
 
     @staticmethod
-    def proof_of_work(prev_proof):
-        # TODO: actual proof
-        return prev_proof + 1 
+    def proof_of_work(prev_proof, block, difficulty):
+        i = 0
+        # Try to find a nonce such that the block's hash has `difficulty` zeros.
+        while True:
+            block.set_nonce(i)
+            h = block.compute_hash
+            if util.verify_hash_zeroes(h, difficulty):
+                print(h)
+                return prev_proof + 1
+            i = i + 1
 
     @property
     def latest_block(self):
@@ -63,15 +70,13 @@ class BlockChain(object):
 
     def mine_block(self, miner):
         self.get_data(
-            sender="0",
+            sender="ROOT",
             receiver=miner,
-            quantity=1
+            amount=1
         )
         last_block = self.latest_block
-        last_proof_num = last_block.proof_num
-        proof_num = self.proof_of_work(last_proof_num)
-        last_hash = last_block.compute_hash
-        block = self.build_block(proof_num, last_hash)
+        block = self.build_block(last_block.proof_num + 1, last_block.compute_hash)
+        self.proof_of_work(last_block.proof_num, block, DIFFICULTY)
         return vars(block)
 
     def create_node(self, address):
@@ -91,13 +96,14 @@ class BlockChain(object):
 def main():
     blockchain = BlockChain()
     last_block = blockchain.latest_block
-    last_proof_num = last_block.proof_num
-    proof_num = blockchain.proof_of_work(last_proof_num)
+    proof_num = blockchain.proof_of_work(last_block.proof_num, last_block, DIFFICULTY)
+    blockchain.mine_block("galaxy")
     data = transaction("galaxy", "galaxy2", 50).json()
     last_hash = last_block.compute_hash
-    block = blockchain.build_block(proof_num, last_hash, data)
-    block = blockchain.build_block(proof_num + 1, 
-        block.compute_hash, 
+    blockchain.build_block(blockchain.latest_block.proof_num + 1, last_hash, data)
+    blockchain.build_block( 
+        blockchain.latest_block.proof_num + 1,
+        blockchain.latest_block.compute_hash, 
         transaction("galaxy2", "galaxy", 10).json()
         )
     blockchain.print()

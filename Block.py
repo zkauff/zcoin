@@ -16,13 +16,16 @@ class Block(object):
         self.prev_hash = prev_hash
         self.data = data
         self.timestamp = timestamp
-        self.hash = self.compute_hash
+        self.nonce = 2
+
+    def set_nonce(self, nonce):
+        self.nonce = nonce
 
     def print(self):
-        block_str = "----------\nBlock ID: {}\nProof #{}\nHash: {}\nPrev Hash: {}\nData: {}\nTimestamp: {}\n----------".format(
+        block_str = "----------\nBlock ID: {}\nProof #{}\nHash: {}\nPrev Hash: {}\nData: {}\nTimestamp: {}".format(
             self.idx,
             self.proof_num,
-            self.hash,
+            self.compute_hash,
             self.prev_hash,
             self.data,
             self.timestamp
@@ -31,8 +34,9 @@ class Block(object):
 
     @property
     def compute_hash(self):
-        block_str = "{}{}{}{}{}".format(
+        block_str = "{}{}{}{}{}{}".format(
             self.idx,
+            self.nonce,
             self.proof_num,
             self.prev_hash,
             self.data,
