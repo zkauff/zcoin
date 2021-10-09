@@ -37,6 +37,16 @@ class Block(object):
         print(block_str)
         return block_str
 
+
+
+    def dictify(self):
+        dictionary = {}
+        dictionary["idx"] = self.idx
+        dictionary["proof_num"] = self.proof_num
+        dictionary["prev_hash"] = self.prev_hash
+        dictionary["transactions"] = self.transactions
+        dictionary["timestamp"] = self.timestamp
+
     @property
     def compute_hash(self):
         """
