@@ -1,10 +1,11 @@
-from Block import Block
 import util
-from util import transaction
 from util import confirm_validity
 import json
 import hashlib
-DIFFICULTY = 3
+import pprint
+
+DIFFICULTY=3
+
 """
 Blockchain implementation using the Block class from Block.py as our 
 links in the chain.
@@ -21,37 +22,33 @@ class BlockChain(object):
 
     def print(self):
         for block in self.chain:
-            block.print()
+            pprint.pprint(block)
 
     def build_genesis(self):
         self.build_block(proof_num=0, prev_hash=0)
         pass
 
-    def build_block(self, proof_num, prev_hash, data=None):
-        if not data:
-            data = self.current_transactions
+    def build_block(self, proof_num, prev_hash):
         block = {
             'idx' : len(self.chain),
             'proof_num' : proof_num,
             'prev_hash' : prev_hash,
-            'transactions' : data
+            'transactions' : self.current_transactions
         }
-        self.proof_of_work(proof_num, block, self.pow_difficulty)
+        block["hash"] = self.proof_of_work(proof_num, block, self.pow_difficulty)
         self.current_transactions = []
         self.chain.append(block)
         return block
 
     @staticmethod
-    def confirm_validity(block, prev_block):
-        if(
-            prev_block.idx + 1 != block.idx
-            or prev_block.compute_hash != block.prev_hash
-            or prev_block.timestamp >= block.timestamp
-            or not util.verify_hash_zeroes(block.compute_hash, DIFFICULTY)
-            ):
-            return False
-        else:
-            return True
+    def confirm_validity(proof, prev_proof, threshold):
+        guess = hashlib.sha256(f"{prev_proof}{proof}".encode()).hexdigest()
+        for i in range(threshold):
+            if guess[i] == '0':
+                continue
+            else:
+                return (False, None)
+        return (True, guess)
 
     @staticmethod
     def hash(block):
@@ -73,22 +70,29 @@ class BlockChain(object):
         :param amount: <int> Amount
         :return: <int> The index of the Block that will hold this transaction
         """
-        self.current_transactions.append(transaction(sender, receiver, amount).json())
-        print(f"current_transactions: {self.current_transactions}")
+        self.current_transactions.append({
+            'sender': sender,
+            'receiver': receiver,
+            'amount': amount,
+        })
         return len(self.chain) + 1
 
-    @staticmethod
-    def proof_of_work(prev_proof, block, difficulty):
+    def proof_of_work(self, prev_proof, block=None, difficulty=3):
         """
         Simple Proof of Work Algorithm
         :param prev_proof: <int>
-        :param block: <Block>
+        :param block: <dict>
         :param difficulty: <int>
         :return: <int>
         """
         proof = 0
-        while confirm_validity(prev_proof, proof) is False:
-            proof += 1 
+        valid = False
+        proof_hash = ""
+        while valid is False:
+            (valid, proof_hash) = self.confirm_validity(prev_proof, proof, difficulty)
+            proof += 1
+        if block: 
+            block["hash"] = proof_hash
         return proof
 
     @property
@@ -96,44 +100,33 @@ class BlockChain(object):
         return self.chain[-1]
 
     def mine_block(self, miner):
-        self.new_transaction(
-            sender="ROOT",
-            receiver=miner,
-            amount=1
-        )
+        # We run the proof of work algorithm to get the next proof...
         last_block = self.last_block
-        block = self.build_block(last_block.proof_num + 1, last_block.compute_hash)
-        self.proof_of_work(last_block.proof_num, block, self.pow_difficulty)
-        return vars(block)
+        last_proof = last_block['proof_num']
+        proof = self.proof_of_work(last_proof)
+
+        # We must receive a reward for finding the proof.
+        # The sender is "0" to signify that this node has mined a new coin.
+        self.new_transaction(
+            sender="ROOT_NODE",
+            receiver=miner,
+            amount=1,
+        )
+
+        # Forge the new Block by adding it to the chain
+        previous_hash = self.hash(last_block)
+        block = self.build_block(proof, previous_hash)
+
+        return block
 
     def create_node(self, address):
         self.nodes.add(address)
         return True
-    
-    @staticmethod
-    def get_block_object(block_data):
-        return Block(
-            block_data['idx'],
-            block_data['proof_num'],
-            block_data['prev_hash'],
-            block_data['data'],
-            timestamp=block_data['timestamp']
-        )
+        
 
 def main():
     blockchain = BlockChain(difficulty=DIFFICULTY)
-    last_block = blockchain.last_block
-    proof_num = blockchain.proof_of_work(last_block.proof_num, last_block, blockchain.pow_difficulty)
-    blockchain.mine_block("galaxy")
-    data = transaction("galaxy", "galaxy2", 50).json()
-    last_hash = last_block.compute_hash
-    blockchain.build_block(blockchain.last_block.proof_num + 1, last_hash, data)
-    blockchain.build_block( 
-        blockchain.last_block.proof_num + 1,
-        blockchain.last_block.compute_hash, 
-        transaction("galaxy2", "galaxy", 10).json()
-        )
-    blockchain.print()
+    pprint.pprint(blockchain.mine_block("galaxy"))
 
 if __name__ == "__main__":
     main()
