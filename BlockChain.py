@@ -4,7 +4,7 @@ import json
 import hashlib
 import pprint
 
-DIFFICULTY=3
+DIFFICULTY=5
 
 """
 Blockchain implementation using the Block class from Block.py as our 
@@ -77,9 +77,11 @@ class BlockChain(object):
         })
         return len(self.chain) + 1
 
-    def proof_of_work(self, prev_proof, block=None, difficulty=3):
+    def proof_of_work(self, prev_proof, block=None):
         """
-        Simple Proof of Work Algorithm
+        Simple Proof of Work Algorithm that attempts to find a proof number
+            such that a sha256 of {prev_proof}{proof} produces a valid hash
+            with {self.pow_difficulty} leading zeros.
         :param prev_proof: <int>
         :param block: <dict>
         :param difficulty: <int>
@@ -89,7 +91,7 @@ class BlockChain(object):
         valid = False
         proof_hash = ""
         while valid is False:
-            (valid, proof_hash) = self.confirm_validity(prev_proof, proof, difficulty)
+            (valid, proof_hash) = self.confirm_validity(prev_proof, proof, self.pow_difficulty)
             proof += 1
         if block: 
             block["hash"] = proof_hash
@@ -100,33 +102,30 @@ class BlockChain(object):
         return self.chain[-1]
 
     def mine_block(self, miner):
-        # We run the proof of work algorithm to get the next proof...
+        # Figure out the valid proof number.
         last_block = self.last_block
         last_proof = last_block['proof_num']
         proof = self.proof_of_work(last_proof)
 
-        # We must receive a reward for finding the proof.
-        # The sender is "0" to signify that this node has mined a new coin.
+        # Reward the miner. 
+        # ROOT_NODE sender signifies the coin is brand new.
         self.new_transaction(
             sender="ROOT_NODE",
             receiver=miner,
             amount=1,
         )
 
-        # Forge the new Block by adding it to the chain
+        # Add to the chain. 
         previous_hash = self.hash(last_block)
         block = self.build_block(proof, previous_hash)
 
         return block
 
+    # Unused so far.
     def create_node(self, address):
         self.nodes.add(address)
         return True
         
-
-def main():
+if __name__ == "__main__":
     blockchain = BlockChain(difficulty=DIFFICULTY)
     pprint.pprint(blockchain.mine_block("galaxy"))
-
-if __name__ == "__main__":
-    main()

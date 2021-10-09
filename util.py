@@ -1,8 +1,4 @@
-import json
-import time
-from datetime import datetime
 import hashlib
-from flask import jsonify
 
 def verify_hash_zeroes(hash, threshold):
     if threshold > len(hash):
@@ -22,7 +18,6 @@ def confirm_validity(prev_proof, proof, difficulty):
         :return: <bool> True if correct, False if not.
         :return: <str> hash of the proof
         """
-
         guess = f'{prev_proof}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
         return (verify_hash_zeroes(guess_hash, difficulty), guess_hash)
