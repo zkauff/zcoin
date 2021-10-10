@@ -1,20 +1,19 @@
-import util
-from util import confirm_validity
 import json
 import hashlib
 import pprint
+from urllib.parse import urlparse
+import requests 
 
 DIFFICULTY=5
 
 """
-Blockchain implementation using the Block class from Block.py as our 
-links in the chain.
+A local instance of the blockchain. 
 """
 class BlockChain(object):
     def __init__(self, difficulty=DIFFICULTY):
         self.pow_difficulty = difficulty
         self.chain = []
-        self.nodes = set()
+        self.peer_nodes = set()
         # The list of transactions that will go into the next block. 
         self.current_transactions = [] 
         self.build_genesis()
@@ -35,20 +34,46 @@ class BlockChain(object):
             'prev_hash' : prev_hash,
             'transactions' : self.current_transactions
         }
-        block["hash"] = self.proof_of_work(proof_num, block, self.pow_difficulty)
         self.current_transactions = []
         self.chain.append(block)
         return block
 
     @staticmethod
-    def confirm_validity(proof, prev_proof, threshold):
+    def confirm_block_validity(prev_proof, proof, threshold):
         guess = hashlib.sha256(f"{prev_proof}{proof}".encode()).hexdigest()
+        print(guess)
         for i in range(threshold):
             if guess[i] == '0':
                 continue
             else:
-                return (False, None)
-        return (True, guess)
+                return False
+        print(proof)
+        print(prev_proof)
+        return True
+    
+    def confirm_chain_validity(self, chain):
+        """
+        Confirms the validity of the provided blockchain
+        :param chain: <list> A blockchain
+        :return: <bool> True if valid, False if not
+        """
+        last_block = chain[0]
+        idx = 1 
+        while(idx < len(chain)):
+            block = chain[idx]
+            # Ensure the hash is correctly pointing to previous block and that
+            # the proof of work algorithm was correctly calculated.
+            if block["prev_hash"] != self.hash(last_block) or not self.confirm_block_validity(
+                    last_block["proof_num"], 
+                    block["proof_num"], 
+                    self.pow_difficulty):
+                print(f"last block proof: {last_block['proof_num']}")
+                print(f"block proof: {block['proof_num']}")
+                return False 
+            else:
+                idx = idx + 1
+                last_block = block
+        return True 
 
     @staticmethod
     def hash(block):
@@ -77,7 +102,7 @@ class BlockChain(object):
         })
         return len(self.chain) + 1
 
-    def proof_of_work(self, prev_proof, block=None):
+    def proof_of_work(self, prev_proof):
         """
         Simple Proof of Work Algorithm that attempts to find a proof number
             such that a sha256 of {prev_proof}{proof} produces a valid hash
@@ -89,12 +114,9 @@ class BlockChain(object):
         """
         proof = 0
         valid = False
-        proof_hash = ""
         while valid is False:
-            (valid, proof_hash) = self.confirm_validity(prev_proof, proof, self.pow_difficulty)
             proof += 1
-        if block: 
-            block["hash"] = proof_hash
+            valid = self.confirm_block_validity(prev_proof, proof, self.pow_difficulty)
         return proof
 
     @property
@@ -121,11 +143,49 @@ class BlockChain(object):
 
         return block
 
-    # Unused so far.
-    def create_node(self, address):
-        self.nodes.add(address)
-        return True
+    def register_peer_node(self, address):
+        """
+        Add new node to our list of peer nodes
+        :param address: <str> Address of the peer node node. Eg. 'http://192.168.0.5:5000'
+        :return: True if successful 
+        """
+        try:
+            self.peer_nodes.add(urlparse(address).path)
+            return True
+        except:
+            return False
         
+    def consensus(self):
+        """
+        Performs the consensus algorithm by looking at our peers for the longest valid chain.
+        :return: <int> was this chain replaced
+        :return: <list> our new blockchain
+        :return: <str> where we got the blockchain from
+        """
+        # Stores the blockchain once we've reached consensus
+        resolved_chain = self.chain
+        # the maximum length chain we've seen so far
+        curr_max = len(self.chain)
+        authoritative_chain_source = None
+        rc = 0
+        for node in self.peer_nodes:
+            try:
+                print(f"checking with {node}")
+                resp = requests.get(f"http://{node}/chain")
+                if resp.status_code == 200: # successful
+                    tmp_len = resp.json()["length"]
+                    tmp_chain = resp.json()["chain"]
+                    pprint.pprint(tmp_chain)
+                    if tmp_len > curr_max and self.confirm_chain_validity(tmp_chain):
+                            curr_max = tmp_len
+                            resolved_chain = tmp_chain
+                            rc = 1
+                            authoritative_chain_source = node
+            except:
+                pass
+        self.chain = resolved_chain
+        return (rc, resolved_chain, authoritative_chain_source)
+
 if __name__ == "__main__":
     blockchain = BlockChain(difficulty=DIFFICULTY)
     pprint.pprint(blockchain.mine_block("galaxy"))
