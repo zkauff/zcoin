@@ -4,7 +4,7 @@ import pprint
 from urllib.parse import urlparse
 import requests 
 
-DIFFICULTY=5
+DIFFICULTY=2
 
 """
 A local instance of the blockchain. 
@@ -41,14 +41,11 @@ class BlockChain(object):
     @staticmethod
     def confirm_block_validity(prev_proof, proof, threshold):
         guess = hashlib.sha256(f"{prev_proof}{proof}".encode()).hexdigest()
-        print(guess)
         for i in range(threshold):
             if guess[i] == '0':
                 continue
             else:
                 return False
-        print(proof)
-        print(prev_proof)
         return True
     
     def confirm_chain_validity(self, chain):
@@ -67,8 +64,6 @@ class BlockChain(object):
                     last_block["proof_num"], 
                     block["proof_num"], 
                     self.pow_difficulty):
-                print(f"last block proof: {last_block['proof_num']}")
-                print(f"block proof: {block['proof_num']}")
                 return False 
             else:
                 idx = idx + 1
