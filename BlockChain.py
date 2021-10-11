@@ -29,10 +29,10 @@ class BlockChain(object):
 
     def build_block(self, proof_num, prev_hash):
         block = {
-            'idx' : len(self.chain),
-            'proof_num' : proof_num,
-            'prev_hash' : prev_hash,
-            'transactions' : self.current_transactions
+            "idx" : len(self.chain),
+            "proof_num" : proof_num,
+            "prev_hash" : prev_hash,
+            "transactions" : self.current_transactions
         }
         self.current_transactions = []
         self.chain.append(block)
@@ -42,7 +42,7 @@ class BlockChain(object):
     def confirm_block_validity(prev_proof, proof, threshold):
         guess = hashlib.sha256(f"{prev_proof}{proof}".encode()).hexdigest()
         for i in range(threshold):
-            if guess[i] == '0':
+            if guess[i] == "0":
                 continue
             else:
                 return False
@@ -82,20 +82,31 @@ class BlockChain(object):
         block_string = json.dumps(block, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
 
+    def verify_sender_funds(self, sender, funds):
+        sender_funds = 0
+        for block in self.chain:
+            for transaction in block["transactions"]:
+                if transaction["receiver"] == sender:
+                    sender_funds = sender_funds + transaction["amount"]
+        return sender_funds >= funds
+
     def new_transaction(self, sender, receiver, amount):
         """
         Creates a new transaction to go into the Block successfully mined. 
         :param sender: <str> Address of the Sender
         :param recipient: <str> Address of the Recipient
         :param amount: <int> Amount
-        :return: <int> The index of the Block that will hold this transaction
+        :return: <int> The index of the Block that will hold this transaction, -1 if it can't be added.
         """
-        self.current_transactions.append({
-            'sender': sender,
-            'receiver': receiver,
-            'amount': amount,
-        })
-        return len(self.chain) + 1
+        if self.verify_sender_funds(sender, amount):
+            self.current_transactions.append({
+                "sender": sender,
+                "receiver": receiver,
+                "amount": amount,
+            })
+            return len(self.chain) + 1
+        else:
+            return -1
 
     def proof_of_work(self, prev_proof):
         """
@@ -121,7 +132,7 @@ class BlockChain(object):
     def mine_block(self, miner):
         # Figure out the valid proof number.
         last_block = self.last_block
-        last_proof = last_block['proof_num']
+        last_proof = last_block["proof_num"]
         proof = self.proof_of_work(last_proof)
 
         # Reward the miner. 
@@ -141,7 +152,7 @@ class BlockChain(object):
     def register_peer_node(self, address):
         """
         Add new node to our list of peer nodes
-        :param address: <str> Address of the peer node node. Eg. 'http://192.168.0.5:5000'
+        :param address: <str> Address of the peer node node. Eg. "http://192.168.0.5:5000"
         :return: True if successful 
         """
         try:
