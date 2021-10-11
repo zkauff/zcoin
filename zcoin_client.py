@@ -3,6 +3,7 @@ from uuid import uuid4
 from flask import Flask, jsonify, request
 from BlockChain import BlockChain
 import argparse
+import socket
 
 class zcoin_instance(object):
     def __init__(self, port):
@@ -89,7 +90,7 @@ class zcoin_instance(object):
             return jsonify(response), 200
         
     def run(self):
-        self.app.run(host='0.0.0.0', port=self.port)
+        self.app.run(host=socket.gethostbyname(socket.gethostname()), port=self.port)
 
 
 
