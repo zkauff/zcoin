@@ -34,7 +34,5 @@ def test_consensus_update_chain(run_client_instances):
     chain_before = requests.get(f"http://{ip}:5001/chain").json()
     requests.get(f"http://{ip}:5001/peers/consensus")
     chain_after = requests.get(f"http://{ip}:5001/chain").json()
-    print(chain_before)
-    print(chain_after)
     assert chain_after != chain_before
     assert chain_after == original_chain

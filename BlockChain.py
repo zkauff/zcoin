@@ -83,6 +83,8 @@ class BlockChain(object):
         return hashlib.sha256(block_string).hexdigest()
 
     def verify_sender_funds(self, sender, funds):
+        if sender == "ROOT_NODE":
+            return True
         sender_funds = 0
         for block in self.chain:
             for transaction in block["transactions"]:
