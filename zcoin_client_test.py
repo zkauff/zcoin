@@ -13,15 +13,20 @@ def run_client_instances():
     inst1 = zcoin_instance(PORT1).app.test_client()
     ip = socket.gethostbyname(socket.gethostname())
 
-def test_consensus_update_chain(run_client_instances):
-    """
-    Sets up two instances of the blockchain. One will not mine any coins,
-    and the other will mine one coin with some transactions.
-    The consensus algorithm will be run and the blockchain without any mined
-    coins should accept the other chain.
-    """
+def test_mining_updates_chain(run_client_instances):
     original_chain = json.loads(inst1.get("/chain").data.decode())["length"]
     inst1.get("/mine")
     inst1.get("/mine") 
     new_chain = json.loads(inst1.get("/chain").data.decode())["length"]
     assert new_chain == original_chain + 2
+
+def test_transaction_gets_mined(run_client_instances):
+    resp = inst1.post("/transactions/new", 
+        data=json.dumps(dict(sender="ROOT_NODE",
+                             recipient="zkauff",
+                             amount=3)),
+        content_type='application/json')
+    inst1.get("/mine")
+    resp=json.loads(inst1.get("/chain").data.decode())
+    receiver = resp["chain"][resp["length"] - 1]["transactions"][0]["receiver"]
+    assert receiver=="zkauff"
