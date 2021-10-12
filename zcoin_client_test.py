@@ -30,7 +30,7 @@ def test_consensus_update_chain(run_client_instances):
     requests.get(f"http://{ip}:5000/mine") 
     original_chain = requests.get(f"http://{ip}:5000/chain").json()
     # add peer nodes
-    print(requests.post(f"http://{ip}:5001/peers/add", json={"peers": [f"{ip}:5000"]} ))
+    print(requests.post(f"http://{ip}:5001/peers/add", json={"peers": [f"{ip}:5000"]}).json()["message"])
     chain_before = requests.get(f"http://{ip}:5001/chain").json()
     requests.get(f"http://{ip}:5001/peers/consensus")
     chain_after = requests.get(f"http://{ip}:5001/chain").json()
