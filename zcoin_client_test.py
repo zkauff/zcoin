@@ -28,5 +28,6 @@ def test_transaction_gets_mined(run_client_instances):
         content_type='application/json')
     inst1.get("/mine")
     resp=json.loads(inst1.get("/chain").data.decode())
+    print(resp["chain"])
     receiver = resp["chain"][resp["length"] - 1]["transactions"][0]["receiver"]
     assert receiver=="zkauff"
