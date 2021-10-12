@@ -34,6 +34,7 @@ class zcoin_instance(object):
         @self.app.route("/transactions/new", methods=["POST"])
         def new_transaction():
             values = request.get_json()
+            print(f"Incoming transaction:\n    {values}")
             # Check that the required fields are in the POST'ed data
             required_params = ["sender", "recipient", "amount"]
             try:
@@ -41,7 +42,6 @@ class zcoin_instance(object):
                     return "Missing parameters", 400
             except:
                 return "Missing parameters", 400
-            print(f"Incoming transaction:\n    {values}")
                 # Create a new Transaction
             index = blockchain.new_transaction(values["sender"], values["recipient"], values["amount"])
             if index > 0:
