@@ -10,10 +10,12 @@ DIFFICULTY=2
 A local instance of the blockchain. 
 """
 class BlockChain(object):
-    def __init__(self, difficulty=DIFFICULTY):
+    def __init__(self, difficulty=DIFFICULTY, initial_peers=[]):
         self.pow_difficulty = difficulty
         self.chain = []
         self.peer_nodes = set()
+        for peer in initial_peers:
+            self.peer_nodes.add(peer)
         # The list of transactions that will go into the next block. 
         self.current_transactions = [] 
         self.build_genesis()

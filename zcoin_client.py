@@ -9,6 +9,7 @@ class zcoin_instance(object):
     def __init__(self, port):
         # Instantiate our Node
         self.app = Flask(__name__)
+        self.ip = socket.gethostbyname(socket.gethostname())
         self.port = port
         self.app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
         # Generate a globally unique address for this node
@@ -93,7 +94,7 @@ class zcoin_instance(object):
             return jsonify(response), 200
         
     def run(self):
-        self.app.run(host=socket.gethostbyname(socket.gethostname()), port=self.port)
+        self.app.run(host=self.ip, port=self.port)
 
 
 
