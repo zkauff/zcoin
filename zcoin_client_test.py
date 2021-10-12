@@ -25,7 +25,8 @@ def test_transaction_gets_mined(run_client_instances):
         data=json.dumps(dict(sender="ROOT_NODE",
                              recipient="zkauff",
                              amount=3)),
-        content_type='application/json')
+        content_type='application/json',
+        follow_redirects=True)
     print(resp)
     inst1.get("/mine")
     resp=json.loads(inst1.get("/chain").data.decode())
