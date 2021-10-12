@@ -4,6 +4,7 @@ from flask import Flask, jsonify, request
 from BlockChain import BlockChain
 import argparse
 import socket
+import json
 
 class zcoin_instance(object):
     def __init__(self, port):
@@ -33,7 +34,7 @@ class zcoin_instance(object):
 
         @self.app.route("/transactions/new", methods=["POST"])
         def new_transaction():
-            values = request.get_json()
+            values = json.loads(request.data, strict=False)
             print(f"Incoming transaction:\n    {values}")
             # Check that the required fields are in the POST'ed data
             required_params = ["sender", "recipient", "amount"]
