@@ -66,6 +66,7 @@ class BlockChain(object):
                     last_block["proof_num"], 
                     block["proof_num"], 
                     self.pow_difficulty):
+                print(chain + "was not valid!")
                 return False 
             else:
                 idx = idx + 1
@@ -161,6 +162,7 @@ class BlockChain(object):
         """
         try:
             self.peer_nodes.add(urlparse(address).path)
+            print(f"Registered {address} as a peer.")
             return True
         except:
             return False
@@ -191,7 +193,10 @@ class BlockChain(object):
                             resolved_chain = tmp_chain
                             rc = 1
                             authoritative_chain_source = node
-            except:
+                else:
+                    print(f"Got status code {resp.status_code} from {node}")
+            except Exception as e:
+                print(e)
                 pass
         self.chain = resolved_chain
         return (rc, resolved_chain, authoritative_chain_source)

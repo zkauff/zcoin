@@ -2,6 +2,7 @@ from zcoin_client import zcoin_instance
 import socket
 import pytest
 import json
+from BlockChain import BlockChain
 
 ip = "0.0.0.0"
 inst1 = None 
@@ -9,7 +10,7 @@ PORT1 = 5000
 
 @pytest.fixture
 def run_client_instances():
-    global ip, inst1, inst2
+    global ip, inst1
     inst1 = zcoin_instance(PORT1).app.test_client()
     ip = socket.gethostbyname(socket.gethostname())
 
@@ -27,9 +28,7 @@ def test_transaction_gets_mined(run_client_instances):
                              amount=3)),
         content_type='application/json',
         follow_redirects=True)
-    print(resp)
     inst1.get("/mine")
     resp=json.loads(inst1.get("/chain").data.decode())
-    print(resp["chain"])
     receiver = resp["chain"][resp["length"] - 1]["transactions"][0]["receiver"]
     assert receiver=="zkauff"

@@ -12,6 +12,7 @@ class zcoin_instance(object):
         self.app = Flask(__name__)
         self.ip = socket.gethostbyname(socket.gethostname())
         self.port = port
+        print(f"Starting app on {self.ip}:{port}")
         self.app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
         # Generate a globally unique address for this node
         node_identifier = str(uuid4()).replace("-", "")
@@ -70,7 +71,6 @@ class zcoin_instance(object):
                 return "Missing parameters", 400
             peers = values.get("peers")
             for peer in peers:
-                print(peer)
                 blockchain.register_peer_node(peer)
             return jsonify({
                 "message": "Success! Added peers to our instance",
