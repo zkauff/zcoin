@@ -64,4 +64,4 @@ class zcoin_wallet_app():
 
 
 if __name__ == '__main__':
-    zcoin_wallet_app("ztk@iastate.edu")
+    zcoin_wallet_app(os.environ["ZCOIN_USER"])
