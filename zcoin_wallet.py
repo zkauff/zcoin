@@ -1,20 +1,25 @@
 import tkinter as tk
 from tkinter import * 
 import socket
+import os
 import requests
-import json
 import yaml
+import multiprocessing
+import time 
 
-PORT = 5000
+PORT = 5432
 
 class zcoin_wallet_app():
 
     def __init__(self, user):
         """
         Opens up a wallet application for the given user. 
+        Runs a zcoin_instance on port 5432 as a subprocess.
         :param user: a hashed representation for the given user
         """
         self.master = tk.Tk()
+        self.instance = multiprocessing.Process(target=os.system, args=("python zcoin_instance.py -p 5432",))
+        self.instance.start()
         # TODO: read user and initial peers from .yaml
         # TODO: run program in background to start up api
         self.api = f"http://{socket.gethostbyname(socket.gethostname())}:{PORT}"
@@ -43,6 +48,7 @@ class zcoin_wallet_app():
         tk.Button(self.master, text='Close Application', width=25, command=self.master.destroy).grid(row=1, column=1)
 
         self.master.mainloop()
+        self.instance.terminate()
 
     def check_funds(self):
         self.funds = 0
@@ -55,4 +61,7 @@ class zcoin_wallet_app():
                         self.funds = self.funds + transaction["amount"]
             self.displayVar.set(f"AVAILABLE FUNDS={self.funds} zcoin")
 
-zcoin_wallet_app("ztk@iastate.edu")
+
+
+if __name__ == '__main__':
+    zcoin_wallet_app("ztk@iastate.edu")
