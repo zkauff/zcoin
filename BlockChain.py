@@ -11,6 +11,11 @@ A local instance of the blockchain.
 """
 class BlockChain(object):
     def __init__(self, difficulty=DIFFICULTY, initial_peers=[]):
+        """
+        Initializes our version of the blockchain.
+        :param difficulty: how many zeros do our proofs need? 
+        :param initial_peers: the list of initial peers to run consensus with
+        """
         self.pow_difficulty = difficulty
         self.chain = []
         self.peer_nodes = set()
@@ -19,6 +24,8 @@ class BlockChain(object):
         # The list of transactions that will go into the next block. 
         self.current_transactions = [] 
         self.build_genesis()
+        # Run consensus with our initial peers.
+        self.consensus()
         pass
 
     def print(self):
@@ -86,7 +93,14 @@ class BlockChain(object):
         return hashlib.sha256(block_string).hexdigest()
 
     def verify_sender_funds(self, sender, funds):
+        """
+        Verifies the sender has the appropriate amount 
+        of funds before submitting a transaction.
+        :param sender: the sender
+        :param funds: the amount of funds to verify
+        """
         if sender == "ROOT_NODE":
+            # ROOT_NODE can always give out more coins.
             return True
         sender_funds = 0
         for block in self.chain:

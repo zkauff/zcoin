@@ -5,9 +5,10 @@ from BlockChain import BlockChain
 import argparse
 import socket
 import json
+import hashlib
 
 class zcoin_instance(object):
-    def __init__(self, port):
+    def __init__(self, port, user=None, initial_peers=[]):
         # Instantiate our Node
         self.app = Flask(__name__)
         self.ip = socket.gethostbyname(socket.gethostname())
@@ -15,10 +16,13 @@ class zcoin_instance(object):
         print(f"Starting app on {self.ip}:{port}")
         self.app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
         # Generate a globally unique address for this node
-        node_identifier = str(uuid4()).replace("-", "")
+        if user:
+            node_identifier = hashlib.sha256(user.encode()).hexdigest()
+        else:
+            node_identifier = str(uuid4()).replace("-", "")
 
         # Instantiate the Blockchain
-        blockchain = BlockChain()
+        blockchain = BlockChain(initial_peers=initial_peers)
 
         @self.app.route("/mine", methods=["GET"])
         def mine():
@@ -96,6 +100,10 @@ class zcoin_instance(object):
         
     def run(self):
         self.app.run(host=self.ip, port=self.port)
+
+    def get(self):
+        self.resolve_conficts()
+        return self.app.test_client().get("/chain")
 
 
 

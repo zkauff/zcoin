@@ -1,0 +1,7 @@
+known_peers:
+- "10.29.180.146:5000"
+
+# Unused for now
+reputations:
+- 5
+- 3

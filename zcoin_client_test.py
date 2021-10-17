@@ -1,4 +1,4 @@
-from zcoin_client import zcoin_instance
+from zcoin_instance import zcoin_instance
 import socket
 import pytest
 import json
@@ -11,7 +11,7 @@ PORT1 = 5000
 @pytest.fixture
 def run_client_instances():
     global ip, inst1
-    inst1 = zcoin_instance(PORT1).app.test_client()
+    inst1 = zcoin_instance(PORT1, "root@zcoin.com").app.test_client()
     ip = socket.gethostbyname(socket.gethostname())
 
 def test_mining_updates_chain(run_client_instances):
