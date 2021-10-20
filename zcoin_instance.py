@@ -109,6 +109,6 @@ class zcoin_instance(object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the Z-coin client application on the provided port.")
-    parser.add_argument("-p", "--port", type=int, help="the port to run the REST interface on.")
+    parser.add_argument("-p", "--port", type=int, default=5432, help="the port to run the REST interface on.")
     args = parser.parse_args()
     zcoin_instance(args.port).run()
