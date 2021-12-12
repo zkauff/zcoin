@@ -6,6 +6,7 @@ import requests
 import yaml
 import multiprocessing
 import time 
+import hashlib 
 
 PORT = 5432
 
@@ -18,17 +19,15 @@ class zcoin_wallet_app():
         :param user: a hashed representation for the given user
         """
         self.master = tk.Tk()
-        self.instance = multiprocessing.Process(target=os.system, args=("python zcoin_instance.py -p 5432",))
-        self.instance.start()
-        # TODO: read user and initial peers from .yaml
-        # TODO: run program in background to start up api
+        #self.instance = multiprocessing.Process(target=os.system, args=("python zcoin_instance.py -p 5432",))
+        #self.instance.start()
         self.api = f"http://{socket.gethostbyname(socket.gethostname())}:{PORT}"
         self.peers = []
         with open("well_known_peers.yaml", 'r') as stream:
-            peers = yaml.load(stream)['known_peers']
+            peers = yaml.safe_load(stream)['known_peers']
             print(peers)
         self.master.title('ZCoin Wallet')
-        self.user = user
+        self.user = hashlib.sha256(user.encode()).hexdigest()
         self.displayVar = StringVar()
         #check_funds will set the displayVar
         self.check_funds()

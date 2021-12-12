@@ -1,5 +1,5 @@
 from uuid import uuid4
-
+import requests
 from flask import Flask, jsonify, request
 from BlockChain import BlockChain
 import argparse
@@ -76,10 +76,28 @@ class zcoin_instance(object):
             peers = values.get("peers")
             for peer in peers:
                 blockchain.register_peer_node(peer)
+                # Try to add all of their peers nodes as well
+                try:
+                    resp = requests.get(f"http://{peer}/peers/get")
+                    if resp.status_code == 200: # successful
+                        two_hop_peers = resp.json()["peers"]
+                        print(two_hop_peers)
+                        for peer2 in two_hop_peers:
+                            blockchain.register_peer_node(peer2)
+                        print(blockchain.peer_nodes)
+                except:
+                    print(f"Couldn't add {peer}'s peer nodes.")
             return jsonify({
-                "message": "Success! Added peers to our instance",
+                "message": "Success! Added peers to our instance.",
                 "all_peers": list(blockchain.peer_nodes)
             }), 201
+
+        @self.app.route("/peers/get", methods=["GET"])
+        def get_peers():
+            return jsonify({
+                "message": "Successfully retrieved peer nodes.",
+                "peers": list(blockchain.peer_nodes)
+            }), 200
 
         @self.app.route("/peers/consensus", methods=["GET"])
         def resolve_conflicts():
@@ -87,7 +105,7 @@ class zcoin_instance(object):
 
             if was_replaced:
                 response = {
-                    "message": f"Chain was successfully replaced with {source}'s chain",
+                    "message": f"Chain was successfully replaced with {source}'s chain.",
                     "new_chain": new_chain
                 }
             else:
@@ -110,5 +128,7 @@ class zcoin_instance(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the Z-coin client application on the provided port.")
     parser.add_argument("-p", "--port", type=int, default=5432, help="the port to run the REST interface on.")
+    parser.add_argument("-u", "--user", default=None, help="the user who should receive any coins mined on this instance.")
     args = parser.parse_args()
-    zcoin_instance(args.port).run()
+    # TODO: pass in initial well known peers file
+    zcoin_instance(args.port, args.user).run()

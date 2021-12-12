@@ -3,6 +3,7 @@ import hashlib
 import pprint
 from urllib.parse import urlparse
 import requests 
+import yaml
 
 DIFFICULTY=2
 
@@ -21,6 +22,10 @@ class BlockChain(object):
         self.peer_nodes = set()
         for peer in initial_peers:
             self.peer_nodes.add(peer)
+        with open('well_known_peers.yaml', 'r') as file:
+            well_known_peer_dict = yaml.safe_load(file)
+            for peer in well_known_peer_dict['known_peers']:
+                self.peer_nodes.add(peer)
         # The list of transactions that will go into the next block. 
         self.current_transactions = [] 
         self.build_genesis()
