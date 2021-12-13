@@ -108,10 +108,17 @@ class BlockChain(object):
             # ROOT_NODE can always give out more coins.
             return True
         sender_funds = 0
+        # verify against the  blockchain
         for block in self.chain:
             for transaction in block["transactions"]:
                 if transaction["receiver"] == sender:
                     sender_funds = sender_funds + transaction["amount"]
+                if transaction["sender"] == sender:
+                    sender_funds = sender_funds - transaction["amount"]
+        # now verify against pending transactions
+        for transaction in self.current_transactions:
+            if transaction["sender"] == sender:
+                sender_funds = sender_funds - transaction["amount"]
         return sender_funds >= funds
 
     def new_transaction(self, sender, receiver, amount):
