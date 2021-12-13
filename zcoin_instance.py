@@ -6,15 +6,21 @@ import argparse
 import socket
 import json
 import hashlib
+import yaml
 
 class zcoin_instance(object):
-    def __init__(self, port, user=None, initial_peers=[]):
+    def __init__(self, port, user=None, initial_peers_file="well_known_peers.yaml"):
         # Instantiate our Node
         self.app = Flask(__name__)
         self.ip = socket.gethostbyname(socket.gethostname())
         self.port = port
         print(f"Starting app on {self.ip}:{port}")
         self.app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
+        initial_peers = []
+        with open(initial_peers_file, 'r') as stream:
+            initial_peers = yaml.safe_load(stream)['known_peers']
+            print(initial_peers)
+
         # Generate a globally unique address for this node
         if user:
             node_identifier = hashlib.sha256(user.encode()).hexdigest()
@@ -129,6 +135,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the Z-coin client application on the provided port.")
     parser.add_argument("-p", "--port", type=int, default=5432, help="the port to run the REST interface on.")
     parser.add_argument("-u", "--user", default=None, help="the user who should receive any coins mined on this instance.")
+    parser.add_argument("--config", default="well_known_peers.yaml", help="a file with well known peers to use for initial peers")
     args = parser.parse_args()
-    # TODO: pass in initial well known peers file
-    zcoin_instance(args.port, args.user).run()
+    zcoin_instance(args.port, args.user, args.config).run()
