@@ -97,16 +97,12 @@ class BlockChain(object):
         block_string = json.dumps(block, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
 
-    def verify_sender_funds(self, sender, funds):
+    def get_user_balance(self, sender):
         """
-        Verifies the sender has the appropriate amount 
-        of funds before submitting a transaction.
+        Checks the blockchain and pending transactions to 
+        determine how many coins the sender can give away
         :param sender: the sender
-        :param funds: the amount of funds to verify
         """
-        if sender == "ROOT_NODE":
-            # ROOT_NODE can always give out more coins.
-            return True
         sender_funds = 0
         # verify against the  blockchain
         for block in self.chain:
@@ -119,7 +115,19 @@ class BlockChain(object):
         for transaction in self.current_transactions:
             if transaction["sender"] == sender:
                 sender_funds = sender_funds - transaction["amount"]
-        return sender_funds >= funds
+        return sender_funds
+
+    def verify_sender_funds(self, sender, funds):
+        """
+        Verifies the sender has the appropriate amount 
+        of funds before submitting a transaction.
+        :param sender: the sender
+        :param funds: the amount of funds to verify
+        """
+        if sender == "ROOT_NODE":
+            # ROOT_NODE can always give out more coins.
+            return True
+        return self.get_user_balance(sender) >= funds
 
     def new_transaction(self, sender, receiver, amount):
         """
@@ -177,7 +185,7 @@ class BlockChain(object):
         # Add to the chain. 
         previous_hash = self.hash(last_block)
         block = self.build_block(proof, previous_hash)
-
+        self.trigger_peer_update()
         return block
 
     def register_peer_node(self, address):
@@ -192,7 +200,21 @@ class BlockChain(object):
             return True
         except:
             return False
-        
+
+    def trigger_peer_update(self):
+        """
+        Tells all the peers on the peer list to 
+        run consensus. This is run when there is a 
+        new update to our blockchain to push out.
+        """
+        for node in self.peer_nodes:
+            try:
+                print(f"Alerting {node}.")
+                # trust that the node will find its way to the correct consensus chain
+                requests.get(f"http://{node}/chain")
+            except:
+                print(f"Couldn't alert {node}")
+
     def consensus(self):
         """
         Performs the consensus algorithm by looking at our peers for the longest valid chain.

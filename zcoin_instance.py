@@ -43,6 +43,16 @@ class zcoin_instance(object):
             }
             return jsonify(response), 200
 
+        @self.app.route("/users/balance", methods=["GET"])
+        def get_user_balance():
+            values = json.loads(request.data, strict=False)
+            required_params = ["user"]
+            if not all (k in values for k in required_params):
+                return "Missing parameters", 400
+            balance = blockchain.get_user_balance(values["user"])
+            response = {"balance" : balance}
+            return jsonify(response), 200
+
         @self.app.route("/transactions/new", methods=["POST"])
         def new_transaction():
             values = json.loads(request.data, strict=False)
@@ -54,7 +64,7 @@ class zcoin_instance(object):
                     return "Missing parameters", 400
             except:
                 return "Missing parameters", 400
-                # Create a new Transaction
+            # Create a new Transaction
             index = blockchain.new_transaction(values["sender"], values["recipient"], values["amount"])
             if index > 0:
                 response = {"message": f"Transaction will be added to Block {index} when it is mined."}

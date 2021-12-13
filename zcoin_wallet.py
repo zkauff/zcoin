@@ -36,8 +36,8 @@ class zcoin_wallet_app():
         self.user_display = Frame(master=self.window)
         self.options = Frame(master=self.window)
         self.options_lvl2 = Frame(master=self.window)
-        self.new_transaction_labels = Frame(master=self.window)
-        self.new_transaction = Frame(master=self.window)
+        self.new_transaction_amount_frame = Frame(master=self.window)
+        self.new_transaction_recipient_frame = Frame(master=self.window)
         self.new_transaction_button = Frame(master=self.window)
         self.alert = Frame(master=self.window)
 
@@ -71,8 +71,8 @@ class zcoin_wallet_app():
         self.user_display.pack()
         self.options.pack()
         self.options_lvl2.pack()
-        self.new_transaction_labels.pack()
-        self.new_transaction.pack()
+        self.new_transaction_recipient_frame.pack()
+        self.new_transaction_amount_frame.pack()
         self.new_transaction_button.pack()
         Label(self.alert, textvariable=self.alertVar).pack()
         self.alert.pack()
@@ -80,7 +80,6 @@ class zcoin_wallet_app():
 
     def setup_new_transaction(self):
         if not self.setting_up_transaction:
-            self.new_transaction_labels.hidden = 0
             self.setting_up_transaction = True
             # Validate to ensure that only floats are in the entry field
             vcmd = (self.window.register(self.validate), 
@@ -90,18 +89,17 @@ class zcoin_wallet_app():
             -   Transaction recipient
             -   Amount        
             """
-            self.label1 = Label(self.new_transaction_labels, text="New transaction recipient", width=50)
+            self.label1 = Label(self.new_transaction_recipient_frame, text="New transaction recipient", width=50)
             self.label1.pack(side=LEFT, anchor=tk.W)
-            self.label2 = Label(self.new_transaction_labels, text="New transaction amount", width=50)
-            self.label2.pack(side=RIGHT, anchor=tk.W)
-            self.recipient = Entry(self.new_transaction, width=50)
+            self.label2 = Label(self.new_transaction_amount_frame, text="New transaction amount", width=50)
+            self.label2.pack(side=LEFT, anchor=tk.W)
+            self.recipient = Entry(self.new_transaction_recipient_frame, width=50)
             self.recipient.pack(side=LEFT, anchor=tk.W)
-            self.amount = Entry(self.new_transaction, width=50, validate='key', validatecommand=vcmd)
+            self.amount = Entry(self.new_transaction_amount_frame, width=50, validate='key', validatecommand=vcmd)
             self.amount.pack(side=RIGHT, anchor=tk.W)
             self.submit_button = Button(self.new_transaction_button, text="Submit transaction", width=100, command=self.submit_transaction)
             self.submit_button.pack()
         else:
-            self.new_transaction_labels.hidden = 1
             self.setting_up_transaction = 0
             self.recipient.destroy()
             self.amount.destroy()
@@ -117,6 +115,7 @@ class zcoin_wallet_app():
                       'amount': float(self.amount.get())}
             resp = requests.post(self.url + '/transactions/new', json=params)
             self.alertVar.set(resp.text)
+            self.check_funds()
         except:
             self.alertVar.set("Couldn't submit transaction.")
 
@@ -144,17 +143,10 @@ class zcoin_wallet_app():
             self.alertVar.set("Couldn't connect to chain endpoint.")
 
     def check_funds(self):
-        self.funds = 0
-        response = requests.get(self.url + "/chain")
+        params = {'user': self.user}
+        response = requests.get(self.url + "/users/balance", json=params)
         if response.status_code == 200:
-            chain = response.json()["chain"]
-            for block in chain:
-                for transaction in block["transactions"]:
-                    if transaction["receiver"] == self.user:
-                        self.funds = self.funds + transaction["amount"]
-                    if transaction["sender"] == self.user:
-                        self.funds = self.funds - transaction["amount"]
-            self.balanceVar.set(f"AVAILABLE FUNDS={self.funds} zcoin")
+            self.balanceVar.set(f"AVAILABLE FUNDS={response.json()['balance']} zcoin")
 
 if __name__ == '__main__':    
     parser = argparse.ArgumentParser(description="Run the Z-coin client application on the provided port.")

@@ -1,5 +1,4 @@
-known_peers:
-- "galaxy:5342"
+known_peers: []
 
 # Unused for now
 reputations:
