@@ -186,7 +186,7 @@ class BlockChain(object):
         # Add to the chain. 
         previous_hash = self.hash(last_block)
         block = self.build_block(proof, previous_hash)
-        self.trigger_peer_update()
+        #self.trigger_peer_update()
         return block
 
     def register_peer_node(self, address):
