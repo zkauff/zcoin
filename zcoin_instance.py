@@ -22,10 +22,11 @@ class zcoin_instance(object):
             print(initial_peers)
             for peer in initial_peers:
                 try:
-                    params = {'peers': [f"{self.ip}:{port}"]}
-                    resp = requests.post(peer + "/peers/add", json=params)
+                    params = {'peers': [ f"{self.ip}:{port}" ]}
+                    resp = requests.post(f"http://{peer}/peers/add", json=params)
                     print(resp.text)
-                except:
+                except Exception as e:
+                    print(e)
                     print(f"Couldn't tell {peer} to add us to their peer list.")
 
         # Generate a globally unique address for this node

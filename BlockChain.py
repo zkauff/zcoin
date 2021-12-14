@@ -157,17 +157,17 @@ class BlockChain(object):
         :param difficulty: <int>
         :return: <int>
         """
-        proof = 0
+        nonce = 0
         valid = False
         while valid is False:
-            proof += 1
-            valid = self.confirm_block_validity(prev_proof, proof, self.pow_difficulty)
-        return proof
+            nonce += 1
+            valid = self.confirm_block_validity(prev_proof, nonce, self.pow_difficulty)
+        return nonce
 
     @property
     def last_block(self):
         return self.chain[-1]
-
+ 
     def mine_block(self, miner):
         # Figure out the valid proof number.
         last_block = self.last_block
@@ -211,8 +211,9 @@ class BlockChain(object):
             try:
                 print(f"Alerting {node}.")
                 # trust that the node will find its way to the correct consensus chain
-                requests.get(f"http://{node}/chain")
-            except:
+                requests.get(f"http://{node}/peers/consensus")
+            except Exception as e:
+                print(e)
                 print(f"Couldn't alert {node}")
 
     def consensus(self):
