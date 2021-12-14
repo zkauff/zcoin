@@ -1,7 +1,6 @@
 import json
 import hashlib
 import pprint
-from urllib.parse import urlparse
 import requests 
 import yaml
 
@@ -230,7 +229,12 @@ class BlockChain(object):
                 else:
                     print(f"Got status code {resp.status_code} from {node}")
             except Exception as e:
-                print(e)
+                """
+                Problem connecting to the other server, remove them from our 
+                peers
+                """
+                print(f"Problem contacting {node}. Removing it from peer list.")
+                self.peer_nodes.remove(node)
                 pass
         self.chain = resolved_chain
         return (rc, resolved_chain, authoritative_chain_source)

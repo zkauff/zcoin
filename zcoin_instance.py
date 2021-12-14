@@ -71,7 +71,7 @@ class zcoin_instance(object):
                     return "Missing parameters", 400
             except:
                 return "Missing parameters", 400
-            # Create a new Transaction
+            # Create a new tansaction
             index = blockchain.new_transaction(values["sender"], values["recipient"], values["amount"])
             if index > 0:
                 response = {"message": f"Transaction will be added to Block {index} when it is mined."}
@@ -98,17 +98,14 @@ class zcoin_instance(object):
                 return "Missing parameters", 400
             peers = values.get("peers")
             for peer in peers:
-                print(peer)
                 blockchain.register_peer_node(peer)
                 # Try to add all of their peers nodes as well
                 try:
                     resp = requests.get(f"http://{peer}/peers/get")
                     if resp.status_code == 200: # successful
                         two_hop_peers = resp.json()["peers"]
-                        print(two_hop_peers)
                         for peer2 in two_hop_peers:
                             blockchain.register_peer_node(peer2)
-                        print(blockchain.peer_nodes)
                 except:
                     print(f"Couldn't add {peer}'s peer nodes.")
             return jsonify({
@@ -152,8 +149,11 @@ class zcoin_instance(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the Z-coin client application on the provided port.")
     parser.add_argument("-a", "--addr", 
-        default=f"{socket.gethostbyname(socket.gethostname())}:5432", help="the address to run the REST interface on.")
+        default=socket.gethostbyname(socket.gethostname()), help="the address to run the REST interface on.")
+    parser.add_argument("-p", "--port", type=int,
+        default=5432, help="the port to run the REST interface on.")
     parser.add_argument("-u", "--user", default=None, help="the user who should receive any coins mined on this instance.")
     parser.add_argument("--config", default="well_known_peers.yaml", help="a file with well known peers to use for initial peers")
     args = parser.parse_args()
-    zcoin_instance(args.addr, args.user, args.config).run()
+    address = args.addr + ':' + str(args.port)
+    zcoin_instance(address, args.user, args.config).run()

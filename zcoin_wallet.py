@@ -4,8 +4,6 @@ import socket
 import os
 import requests
 import yaml
-import multiprocessing
-import time 
 import hashlib 
 import argparse 
 
@@ -149,11 +147,13 @@ class zcoin_wallet_app():
 
 if __name__ == '__main__':    
     parser = argparse.ArgumentParser(description="Run the Z-coin client application on the provided port.")
-    parser.add_argument("--addr",
-        default=f"http://{socket.gethostbyname(socket.gethostname())}:{PORT}", 
-        help="the blockchain endpoint we should connect to")
+    parser.add_argument("-a", "--addr", 
+        default=socket.gethostbyname(socket.gethostname()), help="the address to run the REST interface on.")
+    parser.add_argument("-p", "--port", type=int,
+        default=5432, help="the port to run the REST interface on.")
     parser.add_argument("-u", "--user", 
         default=os.environ.get("ZCOIN_USER"), 
         help="the private user key to sign in with")
     args = parser.parse_args()
-    zcoin_wallet_app(args.user, args.addr)
+    address = args.addr + ':' + str(args.port)
+    zcoin_wallet_app(args.user, address)
