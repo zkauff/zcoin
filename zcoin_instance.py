@@ -20,6 +20,13 @@ class zcoin_instance(object):
         with open(initial_peers_file, 'r') as stream:
             initial_peers = yaml.safe_load(stream)['known_peers']
             print(initial_peers)
+            for peer in initial_peers:
+                try:
+                    params = {'peers': f"{self.ip}:{port}"}
+                    resp = requests.post(peer + "/peers/add", json=params)
+                    print(resp.text)
+                except:
+                    print(f"Couldn't tell {peer} to add us to their peer list.")
 
         # Generate a globally unique address for this node
         if user:
