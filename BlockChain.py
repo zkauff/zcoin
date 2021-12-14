@@ -103,7 +103,7 @@ class BlockChain(object):
         determine how many coins the sender can give away
         :param sender: the sender
         """
-        self.consensus()
+        self.consensus() # update blockchain
         sender_funds = 0
         # verify against the  blockchain
         for block in self.chain:
