@@ -162,7 +162,7 @@ if __name__ == '__main__':
         default=f"http://{socket.gethostbyname(socket.gethostname())}:{PORT}", 
         help="the blockchain endpoint we should connect to")
     parser.add_argument("-u", "--user", 
-        default=os.environ["ZCOIN_USER"], 
+        default=os.environ.get("ZCOIN_USER"), 
         help="the private user key to sign in with")
     args = parser.parse_args()
     zcoin_wallet_app(args.user, args.addr)
