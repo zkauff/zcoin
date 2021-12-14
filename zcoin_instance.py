@@ -10,7 +10,9 @@ import yaml
 
 class zcoin_instance(object):
     def __init__(self, addr, user=None, initial_peers_file="well_known_peers.yaml"):
-        # Instantiate our Node
+        """
+        Instantiates a new zcoin server instance on the given address.
+        """
         self.app = Flask(__name__)
         self.addr = addr
         print(f"Starting app on {addr}")
@@ -18,7 +20,10 @@ class zcoin_instance(object):
         initial_peers = []
         with open(initial_peers_file, 'r') as stream:
             initial_peers = yaml.safe_load(stream)['known_peers']
-            print(initial_peers)
+            """
+            Tell of our initial peers to add us to
+            our their peer list.
+            """
             for peer in initial_peers:
                 try:
                     params = {'peers': [ self.addr ]}
@@ -40,7 +45,6 @@ class zcoin_instance(object):
         @self.app.route("/mine", methods=["GET"])
         def mine():
             block = blockchain.mine_block(miner=node_identifier)
-
             response = {
                 "message": "New Block Mined!!!",
                 "index": block["idx"],
@@ -64,7 +68,7 @@ class zcoin_instance(object):
         def new_transaction():
             values = json.loads(request.data, strict=False)
             print(f"Incoming transaction:\n    {values}")
-            # Check that the required fields are in the POST'ed data
+            # Check that the required fields are in the POST request
             required_params = ["sender", "recipient", "amount"]
             try:
                 if not all(k in values for k in required_params):
@@ -138,9 +142,16 @@ class zcoin_instance(object):
             return jsonify(response), 200
         
     def run(self):
+        """
+        Start the server on the address, port passed in 
+        to the constructor.
+        """
         self.app.run(host=self.addr.split(':')[0], port=int(self.addr.split(':')[1]))
 
     def get(self):
+        """
+        A method to get the most recent version of the blockchain.
+        """
         self.resolve_conficts()
         return self.app.test_client().get("/chain")
 

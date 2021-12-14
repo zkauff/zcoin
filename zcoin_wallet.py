@@ -75,6 +75,11 @@ class zcoin_wallet_app():
         self.window.mainloop()
 
     def setup_new_transaction(self):
+        """
+        Opens up the transaction editing fields and 
+        a button that sends the transaction to the 
+        server to update the blockchain.
+        """
         if not self.setting_up_transaction:
             self.setting_up_transaction = True
             # Validate to ensure that only floats are in the entry field
@@ -117,6 +122,9 @@ class zcoin_wallet_app():
 
     def validate(self, action, index, value_if_allowed, prior_value, text,
         validation_type, trigger_type, widget_name):
+        """ 
+        Validates the tkinter entry field.
+        """
         if(action=='1'):
             if text in '0123456789':
                 try:
@@ -128,6 +136,10 @@ class zcoin_wallet_app():
             return True
 
     def mine(self):
+        """
+        Tells the server to mine a coin and updates
+        the balance view.
+        """
         try:
             resp = requests.get(f"http://{self.url}/mine")
             if resp.status_code == 200:
@@ -139,7 +151,11 @@ class zcoin_wallet_app():
             self.alertVar.set("Couldn't connect to chain endpoint.")
 
     def check_funds(self):
-        # sending this will have the chain run consensus and then get the balance
+        """
+        Updates the user balance by sending a 
+        balance request to the server. This balance 
+        request will trigger the consensus algorithm beforehand.
+        """
         params = {'user': self.user}
         response = requests.get(f"http://{self.url}/users/balance", json=params)
         if response.status_code == 200:
