@@ -99,6 +99,7 @@ class zcoin_instance(object):
                 return "Missing parameters", 400
             peers = values.get("peers")
             for peer in peers:
+                print(peer)
                 blockchain.register_peer_node(peer)
                 # Try to add all of their peers nodes as well
                 try:

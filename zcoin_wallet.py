@@ -111,7 +111,7 @@ class zcoin_wallet_app():
             params = {'sender': self.user,
                       'recipient': self.recipient.get(),
                       'amount': float(self.amount.get())}
-            resp = requests.post(self.url + '/transactions/new', json=params)
+            resp = requests.post(f"http://{self.url}/transactions/new", json=params)
             self.alertVar.set(resp.text)
             self.check_funds()
         except:
@@ -131,7 +131,7 @@ class zcoin_wallet_app():
 
     def mine(self):
         try:
-            resp = requests.get(self.url + "/mine")
+            resp = requests.get(f"http://{self.url}/mine")
             if resp.status_code == 200:
                 self.alertVar.set("Successfully mined a coin!")
                 self.check_funds()
@@ -143,7 +143,7 @@ class zcoin_wallet_app():
     def check_funds(self):
         # sending this will have the chain run consensus and then get the balance
         params = {'user': self.user}
-        response = requests.get(self.url + "/users/balance", json=params)
+        response = requests.get(f"http://{self.url}/users/balance", json=params)
         if response.status_code == 200:
             self.balanceVar.set(f"AVAILABLE FUNDS={response.json()['balance']} zcoin")
 

@@ -1,6 +1,1 @@
-known_peers:
-- '192.168.4.45:5432'
-
-# Unused for now
-reputations:
-- 5
+known_peers: []

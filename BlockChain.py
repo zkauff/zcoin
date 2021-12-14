@@ -195,7 +195,7 @@ class BlockChain(object):
         :return: True if successful 
         """
         try:
-            self.peer_nodes.add(urlparse(address).path)
+            self.peer_nodes.add(address)
             print(f"Registered {address} as a peer.")
             return True
         except:
