@@ -22,7 +22,7 @@ class zcoin_instance(object):
             print(initial_peers)
             for peer in initial_peers:
                 try:
-                    params = {'peers': f"{self.ip}:{port}"}
+                    params = {'peers': [f"{self.ip}:{port}"]}
                     resp = requests.post(peer + "/peers/add", json=params)
                     print(resp.text)
                 except:
