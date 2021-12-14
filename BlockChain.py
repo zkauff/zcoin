@@ -103,6 +103,7 @@ class BlockChain(object):
         determine how many coins the sender can give away
         :param sender: the sender
         """
+        self.consensus()
         sender_funds = 0
         # verify against the  blockchain
         for block in self.chain:
@@ -185,7 +186,6 @@ class BlockChain(object):
         # Add to the chain. 
         previous_hash = self.hash(last_block)
         block = self.build_block(proof, previous_hash)
-        self.trigger_peer_update()
         return block
 
     def register_peer_node(self, address):
@@ -200,21 +200,6 @@ class BlockChain(object):
             return True
         except:
             return False
-
-    def trigger_peer_update(self):
-        """
-        Tells all the peers on the peer list to 
-        run consensus. This is run when there is a 
-        new update to our blockchain to push out.
-        """
-        for node in self.peer_nodes:
-            try:
-                print(f"Alerting {node}.")
-                # trust that the node will find its way to the correct consensus chain
-                requests.get(f"http://{node}/peers/consensus")
-            except Exception as e:
-                print(e)
-                print(f"Couldn't alert {node}")
 
     def consensus(self):
         """

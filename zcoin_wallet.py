@@ -20,8 +20,6 @@ class zcoin_wallet_app():
         :param user: a hashed representation for the given user
         """
         self.window = tk.Tk()
-        #self.instance = multiprocessing.Process(target=os.system, args=("python zcoin_instance.py -p 5432",))
-        #self.instance.start()
         self.url = addr
 
         # load in well known peers so we know who to contact 
@@ -53,7 +51,7 @@ class zcoin_wallet_app():
         -   Displays user
         -   Displays the user's current available funds
         """
-        Label(self.user_display, width=75, text=self.user).pack(side=LEFT, anchor=tk.W)
+        Label(self.user_display, width=75, text=f"User hash: {self.user}").pack(side=LEFT, anchor=tk.W)
         Label(self.user_display, width=50, textvariable=self.balanceVar).pack(side=RIGHT, anchor=tk.W)
 
         """
