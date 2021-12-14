@@ -143,6 +143,7 @@ class zcoin_wallet_app():
             self.alertVar.set("Couldn't connect to chain endpoint.")
 
     def check_funds(self):
+        # sending this will have the chain run consensus and then get the balance
         params = {'user': self.user}
         response = requests.get(self.url + "/users/balance", json=params)
         if response.status_code == 200:
